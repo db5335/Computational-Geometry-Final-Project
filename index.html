@@ -11,6 +11,17 @@
 		</style>
 	</head>
 	<body>
+		<script src="js/p5.js"></script>
+		<script src="point.js"></script>
+		<script src="cross.js"></script>
+		<script src="common-tangent.js"></script>
+		<script src="convex-hull.js"></script>
+		<script src="qtest.js"></script>
+		<script src="delaunay.js"></script>
+		<script src="rotate.js"></script>
+		<script src="main.js"></script>
+
+
 		<h1>Spherical Voronoi Diagram Pedagogical Aid</h1>
 		
 		<h2>Team Members</h2>
@@ -34,6 +45,65 @@
 	      can point you to the nearest airport on Earth, since large areas without airports can no
 	      longer be approximated with a plane.
 	    </p>
+
+		<div style="width: 100%;">
+			<div id="sphere" style="width: 50%; float: left;"></div>
+			<div id="projection" style="width: 50%; float: right;"></div>	
+		</div>
+
+		<div>
+			<button onclick="rotateX()">Rotate X</button>
+			<button onclick="rotateY()">Rotate Y</button>
+			<button onclick="rotateZ()">Rotate Z</button>
+		</div>
+
+		<br>
+
+		<div>
+			<button id="rangeValue" style="display: inline;" onclick="generate(range.value)">Generate 25 random points</button>
+			<input id="range" type="range" min="10" max="40" oninput="rangeValue.innerText = 'Generate ' + value + ' random points'">
+		</div>
+
+		<br>
+
+		<div>
+			<button onclick="first()">First</button>
+			<button onclick="previous()">Previous</button>
+			<button onclick="next()">Next</button>
+			<button onclick="last()">Last</button>
+		</div>
+
+		<pre>
+			<code>
+given points
+rotatedPoints = []
+projectedPoints = []
+
+theta, phi = angleToNorthPole(points[0])
+
+for point in points:
+	rotatedPoint = point.rotate(theta, phi)
+	rotatedPoints.add(rotatedPoint)
+
+for point in rotatedPoints[1:]:
+	projectedPoint = point.project()
+	projectedPoints.add(projectedPoint)
+
+projectedPoints.sort()
+delaunay = delaunay(projectedPoints)
+hull = delaunay.hull
+
+for point in hull:
+	point.neighbors.add(points[0])
+	points[0].neighbors.add(point)
+
+for point in points:
+	for neighbor in point.neighbors:
+		circumcenter = circumcenter(point, neighbor, neighbor.successor, origin)
+		point.vertices.add(circumcenter)
+	drawPolygon(point.vertices)
+			</code>
+		</pre>
 
 	    <h2>Timeline</h2>
 		<table>
@@ -95,8 +165,8 @@
 		<ul>
 			<li><a href="https://www.jasondavies.com/maps/voronoi/">Inspiration for this Project</a></li>
 			<li><a href="https://www.redblobgames.com/x/1842-delaunay-voronoi-sphere/">Delaunay and Voronoi on a Sphere</a></li>
-    			<li><a href="https://www2.cs.sfu.ca/~binay/813.2011/Fortune.pdf">Fortune's Algorithm for Voronoi Diagrams</a></li>
-    			<li><a href="http://www.personal.psu.edu/cxc11/AERSP560/DELAUNEY/13_Two_algorithms_Delauney.pdf">Algorithms for Delaunay Triangulations</a></li>
+    		<li><a href="https://www.youtube.com/watch?v=zaGd5tXkCnE">Talk on Scipy Spherical Voronoi Diagrams</a></li>
+    		<li><a href="http://www.personal.psu.edu/cxc11/AERSP560/DELAUNEY/13_Two_algorithms_Delauney.pdf">Algorithms for Delaunay Triangulations</a></li>
 		</ul>
 	</body>
 </html>
