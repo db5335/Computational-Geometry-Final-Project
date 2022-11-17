@@ -42,9 +42,24 @@ class Point3d {
         this.x = x
         this.y = y
         this.z = z
+
+        if (Math.abs(z) < 1) {
+            this.lat = 180 * Math.asin(z) / Math.PI
+        } else {
+            this.lat = Math.sign(z) * 90
+        }
+        this.long = 180 * Math.atan2(y, x) / Math.PI
+
         this.color = color
+        if (color != null) {
+            this.rgb = `rgb(${color[0]},${color[1]},${color[2]})`
+            this.rgba = `rgb(${color[0]},${color[1]},${color[2]},0.25)`
+        }
+
         this.neighbors = null
         this.neighborCount = 0
+        this.original = null
+        this.vertices = []
         
         let projX = this.x / radius / (1 - this.z / radius)
         let projY = this.y / radius / (1 - this.z / radius)
@@ -72,17 +87,6 @@ class Point3d {
 
     
     findCenter(point1, point2) {
-        // let x = (this.x + point1.x + point2.x) / 3
-        // let y = (this.y + point1.y + point2.y) / 3
-        // let z = (this.z + point1.z + point2.z) / 3
-        
-        // let dist = Math.sqrt(x * x + y * y + z * z)
-        // return {
-        //     x: x * radius / dist,
-        //     y: y * radius / dist,
-        //     z: z * radius / dist
-        // }
-
         let x1 = this.x
         let y1 = this.y
         let z1 = this.z
@@ -105,20 +109,36 @@ class Point3d {
         let z = dz / 2 / a
 
         let dist = Math.sqrt(x * x + y * y + z * z)
-        return {
+        let v =  {
             x: x * radius / dist,
             y: y * radius / dist,
             z: z * radius / dist
         }
+
+        // return v
+
+        let r = {x:x2-x1,y:y2-y1,z:z2-z1}
+        let s = {x:x3-x2,y:y3-y2,z:z3-z2}
+        let u = {x:r.y*s.z-s.y*r.z, y:s.x*r.z-r.x*s.z, z:r.x*s.y-s.x*r.y}
+
+        if (u.x * v.x + u.y * v.y + u.z * v.z > 0) {
+            v = {x:-v.x, y:-v.y, z:-v.z}
+        }
+
+        return new Point3d(-1, v.x, v.y, v.z, null)
     }
 }
 
 class Point2d {
     constructor(id, x, y, color, point3d) {
         this.id = id
+        
         this.x = x
         this.y = y
+
         this.color = color
+        if (color != null) this.rgb = `rgb(${color[0]},${color[1]},${color[2]})`
+
         this.neighbors = null
         this.neighborCount = 0
         this.point3d = point3d

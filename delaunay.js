@@ -1,27 +1,24 @@
-function delaunay(points) {
+function delaunay(points, iterator) {
     let n = points.length
 
-    let triangulation = []
+    let actions = []
     
     if (n <= 3) {
+        iterator.iteration += 1
         for (let i = 0; i < n; i++) {
-            for (let j = 0; j < n; j++) {
-                if (i == j) continue
+            for (let j = 0; j < i; j++) {
                 points[i].addNeighbor(points[j])
+                points[j].addNeighbor(points[i])
+                actions.push({from: points[i].id, to: points[j].id, add: 1})
             }
-            triangulation.push(points[i])
         }
-        return {
-            triangulation,
-            hull: convexHull(points)
-        }
+        iterator.actions.push(actions)
+        iterator.baseCase.push(true)
+        return convexHull(points)
     }
 
-    let d1 = delaunay(points.slice(0, Math.floor(n / 2)))
-    let d2 = delaunay(points.slice(Math.floor(n / 2), n))
-
-    let hull1 = d1.hull
-    let hull2 = d2.hull
+    let hull1 = delaunay(points.slice(0, Math.floor(n / 2)), iterator)
+    let hull2 = delaunay(points.slice(Math.floor(n / 2), n), iterator)
 
     let ut = upperCommonTangent(hull1, hull2)
     let lt = lowerCommonTangent(hull1, hull2)
@@ -38,6 +35,7 @@ function delaunay(points) {
 
         let r = ltl.addNeighbor(ltr)
         let l = ltr.addNeighbor(ltl)
+        actions.push({from: ltr.id, to: ltl.id, add: 1})
 
         let r1 = l.predecessor
         if (isLeftTurn(l, r, r1)) {
@@ -47,6 +45,7 @@ function delaunay(points) {
 
                 ltr.deleteNeighbor(r1)
                 r1.point.deleteNeighbor(ltr)
+                actions.push({from: ltr.id, to: r1.id, add: -1})
                 r1 = r2
                 r2 = r2.predecessor
             }
@@ -60,6 +59,7 @@ function delaunay(points) {
 
                 ltl.deleteNeighbor(l1)
                 l1.point.deleteNeighbor(ltl)
+                actions.push({from: l1.id, to: ltl.id, add: -1})
                 l1 = l2
                 l2 = l2.successor
             }
@@ -73,6 +73,7 @@ function delaunay(points) {
 
     utl.addNeighbor(utr)
     utr.addNeighbor(utl)
+    actions.push({from: utr.id, to: utl.id, add: 1})
 
     let hull = []
 
@@ -87,7 +88,9 @@ function delaunay(points) {
     for (let k = i; k <= m; k++) hull.push(hull1[k % hull1.length])
     for (let k = n; k <= j; k++) hull.push(hull2[k % hull2.length])
 
-    triangulation = d1.triangulation.concat(d2.triangulation)
+    iterator.iteration += 1
+    iterator.actions.push(actions)
+    iterator.baseCase.push(false)
 
-    return {triangulation, hull}
+    return hull
 }

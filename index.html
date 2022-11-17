@@ -9,9 +9,13 @@
 				border: 1px solid black;
 			}
 		</style>
+		<link href="css/prism.css" rel="stylesheet"/>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+		<link href="css/style.css" rel="stylesheet"/>
 	</head>
-	<body>
+	<body style="background-color: #f5f2f0;">
 		<script src="js/p5.js"></script>
+		<script src="js/prism.js"></script>
 		<script src="point.js"></script>
 		<script src="cross.js"></script>
 		<script src="common-tangent.js"></script>
@@ -19,63 +23,107 @@
 		<script src="qtest.js"></script>
 		<script src="delaunay.js"></script>
 		<script src="rotate.js"></script>
-		<script src="main.js"></script>
+		<script src="pseudocode.js"></script>
 
+		<script src="https://cdn.jsdelivr.net/npm/d3-array@3"></script>
+		<script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script>
+		<script src="https://cdn.jsdelivr.net/npm/versor@0.2"></script>
+		<script src="https://d3js.org/d3.v7.min.js"></script>
 
-		<h1>Spherical Voronoi Diagram Pedagogical Aid</h1>
+		<br>
 		
-		<h2>Team Members</h2>
-		<p>Dominick Banasik</p>
-		
-		<h2>Description</h2>
-		<p>
-			This webpage will serve as a pedagogical aid for the construction of a Voronoi Diagram
-			on a spherical surface. It will show a step-by-step progression of the algorithm that
-			computes the result, highlighting the part of the algorithm currently being executed and
-			animating the process simultaneously.
-		</p>
-    
-	    <h2>Background</h2>
-	    <p>
-	      In a plane, given a set of sites, the Voronoi Diagram is a partition of the plane into
-	      regions such that the closest site to any given point in a region is the site that lies in
-	      the same region. In the case of a sphere, the partition would similarly divide the surface
-	      of the sphere into regions. While the planar version can be used to help you find the nearest
-	      post office in a city, where the area of the city is approximately flat, the spherical diagram
-	      can point you to the nearest airport on Earth, since large areas without airports can no
-	      longer be approximated with a plane.
-	    </p>
-
-		<div style="width: 100%;">
-			<div id="sphere" style="width: 50%; float: left;"></div>
-			<div id="projection" style="width: 50%; float: right;"></div>	
+		<div class="container">
+			<div class="card" style="border-color: #a71c5f;">
+				<div class="card-header" style="border-color: #d54f67;">
+					<div class="row align-items-center">
+						<h1>Spherical Voronoi Diagram Pedagogical Aid</h1>
+					</div>
+				</div>
+				<div class="card-body">
+					<h2>Team Members</h2>
+					<p>Dominick Banasik</p>
+				</div>
+			</div>
 		</div>
+		
+		<br>
 
-		<div>
-			<button onclick="rotateX()">Rotate X</button>
-			<button onclick="rotateY()">Rotate Y</button>
-			<button onclick="rotateZ()">Rotate Z</button>
+		<div class="container">
+			<div class="card">
+				<div class="card-header">
+					<h2>Description</h2>
+				</div>
+				<div class="card-body">
+					<p>
+						This webpage will serve as a pedagogical aid for the construction of a Voronoi Diagram
+						on a spherical surface. It will show a step-by-step progression of the algorithm that
+						computes the result, highlighting the part of the algorithm currently being executed and
+						animating the process simultaneously.
+					</p>
+				</div>
+			</div>
 		</div>
 
 		<br>
 
-		<div>
-			<button id="rangeValue" style="display: inline;" onclick="generate(range.value)">Generate 25 random points</button>
-			<input id="range" type="range" min="10" max="40" oninput="rangeValue.innerText = 'Generate ' + value + ' random points'">
+		<div class="container">
+			<div class="card">
+				<div class="card-header">
+					<h2>Background</h2>
+				</div>
+				<div class="card-body">
+					<p>
+						In a plane, given a set of sites, the Voronoi Diagram is a partition of the plane into
+						regions such that the closest site to any given point in a region is the site that lies in
+						the same region. In the case of a sphere, the partition would similarly divide the surface
+						of the sphere into regions. While the planar version can be used to help you find the nearest
+						post office in a city, where the area of the city is approximately flat, the spherical diagram
+						can point you to the nearest airport on Earth, since large areas without airports can no
+						longer be approximated with a plane.
+					</p>
+				</div>
+			</div>
 		</div>
 
 		<br>
 
-		<div>
-			<button onclick="first()">First</button>
-			<button onclick="previous()">Previous</button>
-			<button onclick="next()">Next</button>
-			<button onclick="last()">Last</button>
-		</div>
+		<div class="container">
+			<div class="card">
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-5">
+							<svg id="sphereSvg" width="500" height="500"></svg>
 
-		<pre>
-			<code>
-given points
+							<br>
+							<br>
+
+							<div>
+								<button id="rangeValue" class="btn btn-primary" style="width: 50%" onclick="generate(+range.value)">
+									Generate 25 random points
+								</button>
+								<input id="range" class="form-range" type="range" min="4" max="40" style="width: 49%; height: 50%"
+									oninput="rangeValue.innerText = 'Generate ' + value + ' random points'">
+							</div>
+					
+							<br>
+
+							<div>
+								<button class="btn btn-primary" onclick="first()">First</button>
+								<button class="btn btn-primary" onclick="previousStage()">Previous Stage</button>
+								<button class="btn btn-primary" onclick="previous()">Previous</button>
+								<button class="btn btn-primary" onclick="next()">Next</button>
+								<button class="btn btn-primary" onclick="nextStage()">Next Stage</button>
+								<button class="btn btn-primary" onclick="last()">Last</button>
+							</div>
+
+							<br>
+							<br>
+
+							<svg id="projectionSvg" width="500" height="500"></svg>
+						</div>
+						<div class="col-md-7">
+							<pre id="sphericalPseudocode" class="language-js" data-line="1">
+<code id="sphericalCode" class="language-js">function sphericalVoronoi(points)
 rotatedPoints = []
 projectedPoints = []
 
@@ -84,10 +132,9 @@ theta, phi = angleToNorthPole(points[0])
 for point in points:
 	rotatedPoint = point.rotate(theta, phi)
 	rotatedPoints.add(rotatedPoint)
-
-for point in rotatedPoints[1:]:
-	projectedPoint = point.project()
-	projectedPoints.add(projectedPoint)
+	if point &#8800 points[0]:
+		projectedPoint = rotatedPoint.projectToPlane()
+		projectedPoints.add(projectedPoint)
 
 projectedPoints.sort()
 delaunay = delaunay(projectedPoints)
@@ -99,74 +146,121 @@ for point in hull:
 
 for point in points:
 	for neighbor in point.neighbors:
-		circumcenter = circumcenter(point, neighbor, neighbor.successor, origin)
+		circumcenter = circumcenter(point, neighbor, neighbor.next, origin)
 		point.vertices.add(circumcenter)
-	drawPolygon(point.vertices)
-			</code>
-		</pre>
+	drawPolygon(point.vertices)</code>
+							</pre>
+							<pre id="delaunayPseudocode" class="language-js" data-line="1">
+<code id="delaunayCode" class="language-js">function delaunay(points)
+if points.length() &#8804 3:
+	return points, convexHull(points)
 
-	    <h2>Timeline</h2>
-		<table>
-			<tr>
-				<td>Week</td>
-				<td>Plans</td>
-			</tr>
-			<tr>
-				<td>4</td>
-				<td>Complete project proposal and webpage.</td>
-			</tr>
-			<tr>
-				<td>5</td>
-				<td>Research Voronoi Diagrams and Delaunay Triangulations on a plane.</td>
-			</tr>
-			<tr>
-				<td>6</td>
-				<td>Research Voronoi Diagrams and Delaunay Triangulations on a sphere. Prepare and present an overview of the project.</td>
-			</tr>
-			<tr>
-				<td>7</td>
-        <td>Begin implementing algorithms.</td>
-			</tr>
-			<tr>
-				<td>8</td>
-        <td>Continue implementing algorithms and visualizations of them.</td>
-			</tr>
-			<tr>
-				<td>9</td>
-        <td>Finish implementing algorithms. Add pseudocode to webpage.</td>
-			</tr>
-			<tr>
-				<td>10</td>
-				<td>Look into ways of stepping through the algorithm. Prepare and present the accomplishments of the project so far.</td>
-			</tr>
-			<tr>
-				<td>11</td>
-        <td>Begin interactive step-through feature of algorithm.</td>
-			</tr>
-			<tr>
-				<td>12</td>
-        <td>Finish interactive step-through feature of algorithm.</td>
-			</tr>
-			<tr>
-				<td>13</td>
-        <td>Add highlighting to the current step in the pseudocode and any features that would improve the webpage as an aid.</td>
-			</tr>
-			<tr>
-				<td>14</td>
-				<td>Fix any remaining bugs. Enhance the interactive experience. Prepare the final webpage and presentation.</td>
-			</tr>
-      <tr>
-        <td>15</td>
-        <td>Present and submit the final webpage.</td>
-      </tr>
-		</table>
+left = delaunay(points[: points.length() / 2])
+right = delaunay(points[points.length() / 2 :])
 
-		<h2>References</h2>
-		<ul>
-			<li><a href="https://www.jasondavies.com/maps/voronoi/">Inspiration for this Project</a></li>
-			<li><a href="https://www.redblobgames.com/x/1842-delaunay-voronoi-sphere/">Delaunay and Voronoi on a Sphere</a></li>
-    		<li><a href="https://www.youtube.com/watch?v=zaGd5tXkCnE">Talk on Scipy Spherical Voronoi Diagrams</a></li>
-    		<li><a href="http://www.personal.psu.edu/cxc11/AERSP560/DELAUNEY/13_Two_algorithms_Delauney.pdf">Algorithms for Delaunay Triangulations</a></li>
-		</ul>
+upperTangent = upperTangent(left, right)
+lowerTangent = lowerTangent(left, right)
+
+while upperTangent != lowerTangent:
+	lowerTangent.merge(left, right)
+
+return points, convexHull(points)
+</code>
+							</pre>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="visualization.js"></script>
+		<script src="main.js"></script>
+		<script>generate(n)</script>
+
+		<br>
+		
+		<div class="container">
+			<div class="card">
+				<div class="card-header">
+					<h2>Timeline</h2>
+				</div>
+				<div class="card-body">
+					<table class="table table-striped">
+						<tr>
+							<td>Week</td>
+							<td>Plans</td>
+						</tr>
+						<tr>
+							<td>4</td>
+							<td>Complete project proposal and webpage.</td>
+						</tr>
+						<tr>
+							<td>5</td>
+							<td>Research Voronoi Diagrams and Delaunay Triangulations on a plane.</td>
+						</tr>
+						<tr>
+							<td>6</td>
+							<td>Research Voronoi Diagrams and Delaunay Triangulations on a sphere. Prepare and present an overview of the project.</td>
+						</tr>
+						<tr>
+							<td>7</td>
+							<td>Begin implementing algorithms.</td>
+						</tr>
+						<tr>
+							<td>8</td>
+							<td>Continue implementing algorithms and visualizations of them.</td>
+						</tr>
+						<tr>
+							<td>9</td>
+							<td>Finish implementing algorithms. Add pseudocode to webpage.</td>
+						</tr>
+						<tr>
+							<td>10</td>
+							<td>Look into ways of stepping through the algorithm. Prepare and present the accomplishments of the project so far.</td>
+						</tr>
+						<tr>
+							<td>11</td>
+							<td>Begin interactive step-through feature of algorithm.</td>
+						</tr>
+						<tr>
+							<td>12</td>
+							<td>Finish interactive step-through feature of algorithm.</td>
+						</tr>
+						<tr>
+							<td>13</td>
+							<td>Add highlighting to the current step in the pseudocode and any features that would improve the webpage as an aid.</td>
+						</tr>
+						<tr>
+							<td>14</td>
+							<td>Fix any remaining bugs. Enhance the interactive experience. Prepare the final webpage and presentation.</td>
+						</tr>
+					  	<tr>
+							<td>15</td>
+							<td>Present and submit the final webpage.</td>
+				  		</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	    
+		<br>
+
+		<div class="container">
+			<div class="card">
+				<div class="card-header">
+					<h2>References</h2>
+				</div>
+				<div class="card-body">
+					<ul>
+						<li><a href="https://www.jasondavies.com/maps/voronoi/" style="color: #2198c9">Inspiration for this Project</a></li>
+						<li><a href="https://www.redblobgames.com/x/1842-delaunay-voronoi-sphere/" style="color: #2198c9">Delaunay and Voronoi on a Sphere</a></li>
+						<li><a href="https://www.youtube.com/watch?v=zaGd5tXkCnE" style="color: #2198c9">Talk on Scipy Spherical Voronoi Diagrams</a></li>
+						<li><a href="http://www.personal.psu.edu/cxc11/AERSP560/DELAUNEY/13_Two_algorithms_Delauney.pdf" style="color: #2198c9">Algorithms for Delaunay Triangulations</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		
+		<br>
 	</body>
 </html>
