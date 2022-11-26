@@ -1,22 +1,13 @@
-const canvasWidth = 720
-const canvasHeight = 720
-
-const red = (255, 0, 0)
-const green = (0, 255, 0)
-const blue = (0, 0, 255)
-const black = (0, 0, 0)
-
-const pointSize = 10
-const lineSize = 2
 const radius = /*200*/ 1
 
 const phases = {
     'originalPoints': 0,
     'rotatedPoints': 1,
-    'projectedPoints': 2,
+    'sort': 2,
     'delaunay': 3,
     'hull': 4,
-    'voronoi': 5
+    'voronoi': 5,
+    'final': 6
 }
 
 let n = 25
@@ -27,7 +18,6 @@ let originalPointFeatures = []
 let rotatedPoints = []
 let rotatedPointFeatures = []
 let rotatedCircleFeatures = []
-let rotatedLineFeatures = []
 
 let rotationPoint = null
 
@@ -37,6 +27,7 @@ let unsortedProjectedPoints = []
 let iterator = {
     iteration: 0,
     baseCase: [],
+    tangents: [],
     actions: []
 }
 let from = []
@@ -52,6 +43,7 @@ let deletedLineFeatures = []
 let hullLineFeatures = []
 let connectLineFeatures = []
 
+let triangleFeatures = []
 let neighborFeatures = []
 let circumcircleFeatures = []
 let voronoiPointFeatures = []
@@ -140,7 +132,6 @@ function generate(m) {
     rotatedPoints = []
     rotatedPointFeatures = []
     rotatedCircleFeatures = []
-    rotatedLineFeatures = []
 
     projectedPoints = []
     unsortedProjectedPoints = []
@@ -148,6 +139,7 @@ function generate(m) {
     iterator = {
         iteration: 0,
         baseCase: [],
+        tangents: [],
         actions: []
     }
 
@@ -161,9 +153,11 @@ function generate(m) {
     hullLineFeatures = []
     connectLineFeatures = []
 
+    triangleFeatures = []
     neighborFeatures = []
     circumcircleFeatures = []
     voronoiPointFeatures = []
+    voronoiEdgeFeatures = []
     voronoiCellFeatures = []
 
     maxX = 0
@@ -198,9 +192,6 @@ function generate(m) {
     }
 
     sphericalVoronoi()
-
-    p2.redraw()
-    p1.redraw()
 }
 
 function sphericalVoronoi() {
@@ -263,16 +254,11 @@ function sphericalVoronoi() {
             geometry: circle.center([long, lat]).radius(rad)([long, lat], rad),
             rgb: point.rgb
         })
-        console.log(rotatedCircleFeatures[i].geometry.coordinates[0])
 
-        rotatedLineFeatures.push({
-            type: 'Feature',
-            geometry: {
-                type: 'LineString',
-                coordinates: [[point.long, point.lat], [original.long, original.lat]]
-            },
-            rgb: point.rgb
-        })
+        if (i > 0) {
+            rotatedPointFeatures.push({})
+            rotatedCircleFeatures.push({})
+        }
     }
 
     for (let i = 1; i < n; i++) {
@@ -309,6 +295,7 @@ function sphericalVoronoi() {
             neighbor = neighbor.successor
         }
         neighbor.insertBefore(new PointNode(inf))
+        point.neighborCount += 1
         if (i > 0) inf.neighbors.insertAfter(new PointNode(del[i]))
 
         hullLineFeatures.push({
@@ -434,6 +421,7 @@ function sphericalVoronoi() {
         let neighbor = rotatedPoint.point2d.neighbors
 
         let voronoiPoints = []
+        triangleFeatures.push([])
         voronoiPointFeatures.push([])
         voronoiEdgeFeatures.push([])
 
@@ -455,6 +443,18 @@ function sphericalVoronoi() {
             })
             
             if (j > 0) {
+                triangleFeatures[i].push({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'MultiLineString',
+                        coordinates: [
+                            [[o.long, o.lat], [p.long, p.lat]],
+                            [[p.long, p.lat], [q.long, q.lat]],
+                            [[q.long, q.lat], [o.long, o.lat]]
+                        ]
+                    }
+                })
+
                 voronoiEdgeFeatures[i].push({
                     type: 'Feature',
                     geometry: {
@@ -464,36 +464,41 @@ function sphericalVoronoi() {
                 })
             }
 
-            if (o.id < p.id && o.id < q.id && j != neighborCount) {
-                vertices += 1
+            vertices += 1
 
-                neighborFeatures.push({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'MultiLineString',
-                        coordinates: [
-                            [[o.long, o.lat], [p.long, p.lat]],
-                            [[p.long, p.lat], [q.long, q.lat]],
-                            [[q.long, q.lat], [o.long, o.lat]]
-                        ]
-                    },
-                    id: o.id,
-                    n: j
-                })
+            neighborFeatures.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'MultiLineString',
+                    coordinates: [
+                        [[o.long, o.lat], [p.long, p.lat]],
+                        [[p.long, p.lat], [q.long, q.lat]],
+                        [[q.long, q.lat], [o.long, o.lat]]
+                    ]
+                },
+                id: o.id,
+                nextId: o.id,
+                n: j
+            })
 
-                let phi1 = Math.PI * o.lat / 180
-                let phi2 = Math.PI * circumcenter.lat / 180
-                let lambda = Math.PI * Math.abs(circumcenter.long - o.long) / 180
-                let rad = 180 * Math.acos(Math.sin(phi1) * Math.sin(phi2) + Math.cos(phi1) * Math.cos(phi2) * Math.cos(lambda)) / Math.PI
+            let phi1 = Math.PI * o.lat / 180
+            let phi2 = Math.PI * circumcenter.lat / 180
+            let lambda = Math.PI * Math.abs(circumcenter.long - o.long) / 180
+            let rad = 180 * Math.acos(Math.sin(phi1) * Math.sin(phi2) + Math.cos(phi1) * Math.cos(phi2) * Math.cos(lambda)) / Math.PI
 
-                circumcircleFeatures.push({
-                    type: 'Feature',
-                    geometry: circle.center([circumcenter.long, circumcenter.lat]).radius(rad)([circumcenter.long, circumcenter.lat], rad),
-                    rgba: o.rgba
-                })
-            }
+            circumcircleFeatures.push({
+                type: 'Feature',
+                geometry: circle.center([circumcenter.long, circumcenter.lat]).radius(rad)([circumcenter.long, circumcenter.lat], rad),
+                rgb: o.rgb,
+                rgba: o.rgba
+            })
+
             neighbor = next
         }
+
+        vertices += 1
+        neighborFeatures.push({id: o.id, nextId: o.id + 1, n: neighborCount})
+        circumcircleFeatures.push({})
 
         voronoiPoints.push(voronoiPoints[0])
         console.log(voronoiPoints.length)
@@ -508,14 +513,11 @@ function sphericalVoronoi() {
     }
 
     let startPhase = {from: 0, to: 0}
-    let rotatedPhase = {from: 1, to: n}
-    let projectedPhase = rotatedPhase/*{
-        from: rotatedPhase.to + 1,
-        to: rotatedPhase.to + n - 1
-    }*/
+    let rotatedPhase = {from: 1, to: 2 * n - 1}
+    let sortPhase = {from: 2 * n, to: 2 * n}
     let delaunayPhase = {
-        from: projectedPhase.to + 1,
-        to: projectedPhase.to + iterator.iteration + 1
+        from: sortPhase.to + 1,
+        to: sortPhase.to + iterator.iteration + 1
     }
     let hullPhase = {
         from: delaunayPhase.to + 1,
@@ -523,11 +525,15 @@ function sphericalVoronoi() {
     }
     let voronoiPhase = {
         from: hullPhase.to + 1,
-        to: hullPhase.to + vertices + 1
+        to: hullPhase.to + vertices
+    }
+    let finalPhase = {
+        from: voronoiPhase.to + 1,
+        to: voronoiPhase.to + 1
     }
 
-    firstSteps = [startPhase.from, rotatedPhase.from, projectedPhase.from, delaunayPhase.from, hullPhase.from, voronoiPhase.from]
-    lastSteps = [startPhase.to, rotatedPhase.to, projectedPhase.to, delaunayPhase.to, hullPhase.to, voronoiPhase.to]
+    firstSteps = [startPhase.from, rotatedPhase.from, sortPhase.from, delaunayPhase.from, hullPhase.from, voronoiPhase.from, finalPhase.from]
+    lastSteps = [startPhase.to, rotatedPhase.to, sortPhase.to, delaunayPhase.to, hullPhase.to, voronoiPhase.to, finalPhase.to]
     step = lastSteps[lastSteps.length - 1]
 
     rerender()

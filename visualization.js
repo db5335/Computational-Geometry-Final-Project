@@ -1,5 +1,5 @@
-const scale = 250
-const translation = [250, 250]
+const scale = 200
+const translation = [250, 200]
 
 const svg = d3.select('#sphereSvg')
 const proj = d3.select('#projectionSvg')
@@ -25,23 +25,23 @@ function rescale() {
 
     xScale = d3.scaleLinear()
         .domain([-max, max])
-        .range([10, 490]) // 600 is our chart width
+        .range([60, 440]) // 600 is our chart width
  
     yScale = d3.scaleLinear()
         .domain([-max, max])
-        .range([10, 490]) // 400 is our chart height
+        .range([10, 390]) // 400 is our chart height
 }
 
 function renderProjection() {
     d3.selectAll('#projectionSvg > g > *').remove()
 
-    proj.select('g').append('line').attr('x1', 10).attr('x2', 490).attr('y1', 250).attr('y2', 250).style('stroke', '#d54f67')
-    proj.select('g').append('line').attr('x1', 250).attr('x2', 250).attr('y1', 10).attr('y2', 490).style('stroke', '#a71c5f')
+    proj.select('g').append('line').attr('x1', 60).attr('x2', 440).attr('y1', 200).attr('y2', 200).style('stroke', '#d54f67')
+    proj.select('g').append('line').attr('x1', 250).attr('x2', 250).attr('y1', 10).attr('y2', 390).style('stroke', '#a71c5f')
 
     if (step <= 1) {
         return
-    } else if (step > firstSteps[phases['rotatedPoints']] && step <= lastSteps[phases['rotatedPoints']]) {
-        let stop = step - firstSteps[phases['rotatedPoints']]
+    } else if (step > firstSteps[phases['rotatedPoints']] && step <= lastSteps[phases['sort']]) {
+        let stop = (step - firstSteps[phases['rotatedPoints']]) / 2
         proj.select('g').selectAll('.projectedPoint').data(unsortedProjectedPoints.slice(0, stop)).enter().append('circle')
             .attr('r', 4.5).attr('cx', p => xScale(p.x)).attr('cy', p => yScale(p.y)).style('fill', p => p.rgb).attr('class', 'projectedPoint')
     } else if (step >= firstSteps[phases['delaunay']]) {
@@ -75,12 +75,12 @@ function renderSphere() {
     console.log(step)
     d3.selectAll('#sphereSvg > *').remove()
     
-    svg.append('path').attr('d', path(sphere)).attr('cx', '50%').attr('cy', '50%').attr('r', 20).style('fill', 'rgba(0,0,0,0.1)')
+    svg.append('path').attr('d', path(sphere)).attr('cx', '50%').attr('cy', '50%').attr('r', 20).style('fill', 'rgb(236, 230, 227)')
     // svg.append('path').datum({type: 'Feature', geometry: {type: 'Point', coordinates: [0, 90]}}).attr('d', path).style('stroke', 'black').style('fill', 'white')
 
     if (step == 0) {
         null
-    } else if (step >= firstSteps[phases['rotatedPoints']] && step <= lastSteps[phases['rotatedPoints']]) {
+    } else if (step >= firstSteps[phases['rotatedPoints']] && step <= lastSteps[phases['sort']]) {
         let stop = step - firstSteps[phases['rotatedPoints']] + 1
         
         svg.selectAll('.rotatedCircle').data(rotatedCircleFeatures.slice(0, stop)).enter().append('path')
@@ -105,14 +105,18 @@ function renderSphere() {
             .attr('d', path).style('stroke', '#d54f67').style('fill', 'rgba(0, 0, 0, 0)')
         svg.selectAll('.connectLine').data(connectLineFeatures.slice(0, stop)).enter().append('path')
             .attr('d', path).style('stroke', '#2198c9').style('fill', 'rgba(0, 0, 0, 0)')
-    } else if (step >= firstSteps[phases['voronoi']] && step < lastSteps[phases['voronoi']]){
+    } else if (step >= firstSteps[phases['voronoi']] && step <= lastSteps[phases['voronoi']]){
         let stop = step - firstSteps[phases['voronoi']]
-        svg.selectAll('.voronoiCell').data(voronoiCellFeatures.slice(0, neighborFeatures[stop].id)).enter().append('path')
+        svg.selectAll('.voronoiCell').data(voronoiCellFeatures.slice(0, neighborFeatures[stop].nextId)).enter().append('path')
             .attr('d', path).style('stroke', 'black').style('fill', v => v.rgb)
+        if (neighborFeatures[stop].id == neighborFeatures[stop].nextId) {
+            svg.selectAll('.triangle').data(triangleFeatures[neighborFeatures[stop].id]).enter().append('path')
+                .attr('d', path).style('stroke', '#d54f67').style('fill', 'rgba(0, 0, 0, 0)')
+        }
         svg.append('path').datum(neighborFeatures[stop])
             .attr('d', path).style('stroke', '#2198c9').style('fill', 'rgba(0, 0, 0, 0)')
         svg.append('path').datum(circumcircleFeatures[stop])
-            .attr('d', path).style('stroke', '#d54f67').style('fill', p => p.rgba)
+            .attr('d', path).style('stroke', p => p.rgb).style('fill', p => p.rgba)
         svg.selectAll('.voronoiEdge').data(voronoiEdgeFeatures[neighborFeatures[stop].id].slice(0, neighborFeatures[stop].n)).enter().append('path')
             .attr('d', path).style('stroke', 'black').style('fill', 'rgba(0, 0, 0, 0)')
         svg.selectAll('.voronoiPoint').data(voronoiPointFeatures[neighborFeatures[stop].id].slice(0, neighborFeatures[stop].n + 1)).enter().append('path')

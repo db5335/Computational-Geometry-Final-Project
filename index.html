@@ -15,7 +15,6 @@
 
 		<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 		<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-		<script>window.MathJax.tex = {packages: {'[-]': ['ams']}}</script>
 	</head>
 	<body style="background-color: #f5f2f0;">
 		<script src="js/prism.js"></script>
@@ -87,7 +86,7 @@
 					</p>
 					<p>
 						Applications of the sperical Voronoi diagram in non-geographic contexts include the study of
-						viruses. In the PyData talk found at <a href="#references">[1]</a> about the addition of the spherical Voronoi diagram
+						viruses. In the PyData talk found at <a href="#references">[3]</a> about the addition of the spherical Voronoi diagram
 						feature to SciPy, it is mentioned that the implementation began to help with the study of
 						viruses. Here, the sites would represent proteins on the surface of the virus, and their
 						Voronoi cells would provide information about the regions closest to their respective sites.
@@ -192,25 +191,10 @@ return points, convexHull(points)</code>
 		<div class="container">
 			<div class="card">
 				<div class="card-header">
-					<h2>Presentation</h2>
-				</div>
-				<div class="card-body">
-					<video controls>
-						<source src="./media/Dominick%20Banasik%20Exam%202%20Video.mp4" type="video/mp4"/>
-					</video>
-				</div>
-			</div>
-		</div>
-
-		<br>
-		
-		<div class="container">
-			<div class="card">
-				<div class="card-header">
 					<h2>Algorithm</h1>
 				</div>
 				<div class="card-body">
-					<h4>Projection</h4>
+					<h4>Stereographic Projection</h4>
 					<p>
 						This algorithm for computing the Voronoi diagram on a sphere relies on the angle-preserving
 						stereographic projection. Because the Delaunay triangulation of points on a plane is defined
@@ -220,7 +204,7 @@ return points, convexHull(points)</code>
 						from the planar coordinates using \((x, y, z) = ({2X \over 1 + X^2 + Y^2}, {2Y \over 1 + X^2 + Y^2},
 						{-1 + X^2 + Y^2 \over 1 + X^2 + Y^2})\). Alternatively, a reference to the spherical point can be kept.
 					</p>
-					<h4>Triangulation</h4>
+					<h4>Delaunay Triangulation</h4>
 					<p>
 						There are several algorithms for computing the Delaunay triangulation of a set of points.
 						The one used in this application is a divide-and-conquer approach, explained in <a href="#references">[4]</a> with the
@@ -239,7 +223,7 @@ return points, convexHull(points)</code>
 						divide-and-conquer algorithm is well-suited for this because it computes the convex hull along with
 						the triangulation.
 					</p>
-					<h4>Voronoi Vertices</h4>
+					<h4>Voronoi Diagram</h4>
 					<p>
 						The final step in finding the spherical Voronoi diagram for a set of points is constructing the
 						Voronoi cells themselves. Using the nearest neighbor information from the Delaunay triangulation,
@@ -278,9 +262,21 @@ return points, convexHull(points)</code>
 						\((PN_1 \times N_1N_2) \cdot OC \gt 0\).
 					</p>
 					<h4>Running Time</h4>
+					<p>
+						The running time for the spherical Voronoi diagram algorithm is \(O(n \log n)\). The first step,
+						rotating and projecting the points, can be done in \(n\) constant-time operations. Sorting \(n-1\)
+						projected points can be done in \(O(n \log n)\) using merge sort, for example. The divide-and-conquer
+						algorithm for computing a Delaunay triangulation is also \(O(n \log n)\). Connecting each point
+						on the convex hull to the first point can be done in \(h\) constant-time operations, where \(h\) is
+						the number of points on the hull. This is always \(O(n)\). The number of triangles in the Delaunay
+						triangulation, both before and after connecting the convex hull, will be \(O(n)\). Since each triangle
+						corresponds to one circumsphere, which corresponds to one Voronoi vertex, the final step of finding
+						the vertices and connecting them along the way is \(O(n)\). This results in an overall running time of
+						\(O(n \log n)\).
+					</p>
 					<div class="row">
 						<div class="col-md-6">
-							<h6>My Implementation</h6>
+							<h6>This Implementation</h6>
 							<table class="table table-striped">
 								<thead>
 									<tr>
@@ -296,9 +292,8 @@ return points, convexHull(points)</code>
 								<tr><td>\(100000\)</td><td>\(40.57\)</td><td>\(2.442 \times 10^{-5}\)</td></tr>
 								<tr><td>\(1000000\)</td><td>\(497.6\)</td><td>\(2.497 \times 10^{-5}\)</td></tr>
 							</table>
-							<img width="100%">
-								<source src="https://github.com/db5335/Computational-Geometry-Final-Project/blob/main/media/Running%20Time.png"/>
-							</img>
+							<img width="100%" src="./media/Running Time.png"/>
+							<p>The theoretical running time is given by \(t = an \log n\), where \(a=2.5 \times 10^{-5} \sec\).</p>
 						</div>
 						<div class="col-md-6">
 							<h6>SciPy Implementation</h6>
@@ -311,15 +306,16 @@ return points, convexHull(points)</code>
 									</tr>
 								</thead>
 								<tr><td>\(10\)</td><td>\(0.001257\)</td><td>\(3.784 \times 10^{-5}\)</td></tr>
-								<tr><td>\(100\)</td><td>\(0.02339\)</td><td>\(3.521 \times 10^{-6}\)</td></tr>
+								<tr><td>\(100\)</td><td>\(0.002339\)</td><td>\(3.521 \times 10^{-6}\)</td></tr>
 								<tr><td>\(1000\)</td><td>\(0.01984\)</td><td>\(1.991 \times 10^{-6}\)</td></tr>
 								<tr><td>\(10000\)</td><td>\(0.2148\)</td><td>\(1.616 \times 10^{-6}\)</td></tr>
 								<tr><td>\(100000\)</td><td>\(2.465\)</td><td>\(1.484 \times 10^{-6}\)</td></tr>
 								<tr><td>\(1000000\)</td><td>\(26.31\)</td><td>\(1.320 \times 10^{-6}\)</td></tr>
 							</table>
+							<img width="100%" src="./media/SciPy Running Time.png"/>
+							<p>The theoretical running time is given by \(t = an \log n\), where \(a=1.5 \times 10^{-6} \sec\).</p>
 						</div>
 					</div>
-					<h4>Data Structures</h4>
 				</div>
 			</div>
 		</div>
@@ -415,8 +411,14 @@ return points, convexHull(points)</code>
 					<h2>Tools</h2>
 				</div>
 				<div class="card-body">
-					<ul>
-					</ul>
+					<ol>
+						<li><a href="https://d3js.org/">D3.js</a> for visualization</li>
+						<li><a href="https://prismjs.com/">Prism</a> for pseudocode</li>
+						<li><a href="https://getbootstrap.com/">Bootstrap</a> for styling</li>
+						<li><a href="https://www.mathjax.org/">MathJax</a> for math formulas</li>
+						<li>HTML, CSS, and JavaScript for webpage</li>
+						<li>Excel for graphs</li>
+					</ol>
 				</div>
 			</div>
 		</div>

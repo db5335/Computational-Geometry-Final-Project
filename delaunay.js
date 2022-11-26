@@ -14,6 +14,7 @@ function delaunay(points, iterator) {
         }
         iterator.actions.push(actions)
         iterator.baseCase.push(true)
+        iterator.tangents.push(false)
         return convexHull(points)
     }
 
@@ -29,13 +30,30 @@ function delaunay(points, iterator) {
     let utl = hull1[ut.end]
     let utr = hull2[ut.start]
 
+    actions.push({from: ltr.id, to: ltl.id, add: 1})
+    actions.push({from: utr.id, to: utl.id, add: 1})  
+
+    iterator.iteration += 1
+    iterator.actions.push(actions)
+    iterator.baseCase.push(false)
+    iterator.tangents.push(true)
+  
+    actions = []
+
+    let first = true
+
     while (ltr.x != utr.x || ltr.y != utr.y || ltl.x != utl.x || ltl.y != utl.y) {
         let a = false
         let b = false
 
         let r = ltl.addNeighbor(ltr)
         let l = ltr.addNeighbor(ltl)
-        actions.push({from: ltr.id, to: ltl.id, add: 1})
+
+        if (!first) {
+            actions.push({from: ltr.id, to: ltl.id, add: 1})
+        } else {
+            first = false
+        }
 
         let r1 = l.predecessor
         if (isLeftTurn(l, r, r1)) {
@@ -91,6 +109,7 @@ function delaunay(points, iterator) {
     iterator.iteration += 1
     iterator.actions.push(actions)
     iterator.baseCase.push(false)
+    iterator.tangents.push(false)
 
     return hull
 }
