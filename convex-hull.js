@@ -1,3 +1,9 @@
+/*
+ * Divide-and-conquer convex hull algorithm.
+ *
+ * Dominick Banasik
+*/
+
 function convexHull(points) {
     let l = points.length
 

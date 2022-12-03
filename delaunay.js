@@ -1,3 +1,10 @@
+/*
+ * Divide-and-conquer Delaunay triangluation algorithm from
+ * http://www.personal.psu.edu/cxc11/AERSP560/DELAUNEY/13_Two_algorithms_Delauney.pdf
+ * 
+ * Dominick Banasik
+*/
+
 function delaunay(points, iterator) {
     let n = points.length
 

@@ -1,3 +1,10 @@
+/*
+ * Functions for finding the upper and lower common tangents
+ * for divide-and-conquer convex hulls.
+ * 
+ * Dominick Banasik
+*/
+
 function upperCommonTangent(left, right) {
     let l = left.length
     let r = right.length

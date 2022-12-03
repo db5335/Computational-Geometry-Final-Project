@@ -1,3 +1,9 @@
+/*
+ * Function for updating the pseudocode highlights appropriately.
+ * 
+ * Dominick Banasik
+*/
+
 function rehighlight() {
     let sphericalPseudocode = document.getElementById('sphericalPseudocode')
     let sphericalCode = document.getElementById('sphericalCode')
@@ -50,8 +56,6 @@ function rehighlight() {
         sphericalPseudocode.setAttribute('data-line', 1)
         projectionPseudocode.setAttribute('data-line', 1)
     }
-
-    console.log('here')
 
     Prism.highlightElement(sphericalCode)
     Prism.highlightElement(projectionCode)

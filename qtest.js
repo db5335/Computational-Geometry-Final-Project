@@ -1,3 +1,9 @@
+/*
+ * Function for performing the incircle test.
+ *
+ * Dominick Banasik
+*/
+
 function intersection(m1, p1, m2, p2) {
     if (m1.x == 0) {
         return {

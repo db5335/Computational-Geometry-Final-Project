@@ -1,3 +1,9 @@
+/*
+ * Script for updating the visualization of the diagram.
+ *
+ * Dominick Banasik
+*/
+
 const scale = 200
 const translation = [250, 200]
 
@@ -5,31 +11,19 @@ const svg = d3.select('#sphereSvg')
 const proj = d3.select('#projectionSvg')
 proj.append("g")
 
-console.log(svg)
-console.log(proj)
-
-// let max = Math.max(maxX, maxY)
-
 let xScale = null
-//     d3.scaleLinear()
-//   .domain([-max, max])
-//   .range([10, 490]) // 600 is our chart width
- 
 let yScale = null
-//     d3.scaleLinear()
-//   .domain([-max, max])
-//   .range([10, 490]) // 400 is our chart height
 
 function rescale() {
     max = Math.max(maxX, maxY)
 
     xScale = d3.scaleLinear()
         .domain([-max, max])
-        .range([60, 440]) // 600 is our chart width
+        .range([60, 440])
  
     yScale = d3.scaleLinear()
         .domain([-max, max])
-        .range([10, 390]) // 400 is our chart height
+        .range([10, 390])
 }
 
 function renderProjection() {
@@ -55,41 +49,30 @@ function renderProjection() {
         proj.select('g').selectAll('.projectedPoint').data(projectedPoints).enter().append('circle')
             .attr('r', 4.5).attr('cx', p => xScale(p.x)).attr('cy', p => yScale(p.y)).style('fill', p => p.rgb).attr('class', 'projectedPoint')
     }
-    return
-    
-    proj.select('g').selectAll('.newLine').data(newLines[0])
-    // proj.select('g').selectAll("circle").data(projectedPoints).enter().append("circle").attr("r", 4.5)
-    // .attr("cx", function(p) {return xScale(p.x)}).attr('cy', function(p) {return yScale(p.y)}).style('stroke', 'black').style('fill', 'red')
 }
 
 
 const projection = d3.geoOrthographic().scale(scale).translate(translation);
 const path = d3.geoPath(projection);
-// const path = d3.geoPath(projection, context).pointRadius(20);
-
 const circle = d3.geoCircle()
 
 const sphere = { type: "Sphere" }
 
 function renderSphere() {
-    console.log(step)
     d3.selectAll('#sphereSvg > *').remove()
     
     svg.append('path').attr('d', path(sphere)).attr('cx', '50%').attr('cy', '50%').attr('r', 20).style('fill', 'rgb(236, 230, 227)')
-    // svg.append('path').datum({type: 'Feature', geometry: {type: 'Point', coordinates: [0, 90]}}).attr('d', path).style('stroke', 'black').style('fill', 'white')
 
     if (step == 0) {
         null
     } else if (step >= firstSteps[phases['rotatedPoints']] && step <= lastSteps[phases['sort']]) {
         let stop = step - firstSteps[phases['rotatedPoints']] + 1
-        
         svg.selectAll('.rotatedCircle').data(rotatedCircleFeatures.slice(0, stop)).enter().append('path')
             .attr('d', path).style('stroke', c => c.rgb).style("fill", 'rgba(0, 0, 0, 0)').attr('class', 'rotatedCircle')
         svg.selectAll('.rotatedPoint').data(rotatedPointFeatures.slice(0, stop)).enter().append('path')
             .attr('d', path).style('fill', p => p.rgb).attr('class', 'rotatedPoint')
     } else if (step >= firstSteps[phases['delaunay']] && step <= lastSteps[phases['delaunay']]) {
         let stop = step - firstSteps[phases['delaunay']]
-        console.log(addedLines[stop])
         svg.selectAll('.addedLine').data(addedLineFeatures[stop]).enter().append('path')
             .attr('d', path).style('stroke', '#2198c9').style('fill', 'rgba(0, 0, 0, 0)')    
         svg.selectAll('.deletedLine').data(deletedLineFeatures[stop]).enter().append('path')
@@ -97,14 +80,18 @@ function renderSphere() {
         svg.selectAll('.remainingLine').data(remainingLineFeatures[stop]).enter().append('path')
             .attr('d', path).style('stroke', 'black').style('fill', 'rgba(0, 0, 0, 0)')
     } else if (step >= firstSteps[phases['hull']] && step <= lastSteps[phases['hull']]) {
-        console.log("HERE")
         let stop = step - firstSteps[phases['hull']]
         svg.selectAll('.remainingLine').data(remainingLineFeatures[remainingLineFeatures.length - 1]).enter().append('path')
             .attr('d', path).style('stroke', 'black').style('fill', 'rgba(0, 0, 0, 0)')
-        svg.selectAll('.hullLine').data(hullLineFeatures).enter().append('path')
-            .attr('d', path).style('stroke', '#d54f67').style('fill', 'rgba(0, 0, 0, 0)')
-        svg.selectAll('.connectLine').data(connectLineFeatures.slice(0, stop)).enter().append('path')
-            .attr('d', path).style('stroke', '#2198c9').style('fill', 'rgba(0, 0, 0, 0)')
+        if (step < lastSteps[phases['hull']]) {
+            svg.selectAll('.hullLine').data(hullLineFeatures).enter().append('path')
+                .attr('d', path).style('stroke', '#d54f67').style('fill', 'rgba(0, 0, 0, 0)')
+            svg.selectAll('.connectLine').data(connectLineFeatures.slice(0, stop)).enter().append('path')
+                .attr('d', path).style('stroke', '#2198c9').style('fill', 'rgba(0, 0, 0, 0)')
+        } else {
+            svg.selectAll('.connectLine').data(connectLineFeatures).enter().append('path')
+                .attr('d', path).style('stroke', 'black').style('fill', 'rgba(0, 0, 0, 0)')
+        }
     } else if (step >= firstSteps[phases['voronoi']] && step <= lastSteps[phases['voronoi']]){
         let stop = step - firstSteps[phases['voronoi']]
         svg.selectAll('.voronoiCell').data(voronoiCellFeatures.slice(0, neighborFeatures[stop].nextId)).enter().append('path')
@@ -128,90 +115,14 @@ function renderSphere() {
 
     svg.selectAll('.originalPoint').data(originalPointFeatures).enter().append('path')
         .attr('d', path).style('stroke', 'black').style('fill', p => p.rgb).attr('class', 'originalPoint')
-
-    return
-
-    for (let i = 0; i < /*n*/step; i++) {
-        let p = originalPoints[i]
-        let coordinates = [[]]
-
-        let cs = []
-
-        let q = rotatedPoints[i]
-        console.log(q)
-        let m = q.point2d.neighborCount
-        let neighbor = q.point2d.neighbors
-        for (let j = 0; j <= m + 1; j++) {
-            let c1 = p.findCenter(originalPoints[neighbor.point.id], originalPoints[neighbor.successor.point.id])
-            // let c2 = rotatedPoint.findCenter(neighbor.predecessor.point.point3d, neighbor.point.point3d)
-        
-
-            coordinates[0].push([c1.long, c1.lat])
-            cs.push(c1)
-
-
-            svg.append("path").datum({
-                type: "Feature",
-                geometry: {
-                    type: "LineString",
-                    coordinates: [[p.long, p.lat], [c1.long, c1.lat]]
-                }
-            }).attr("d", path).attr('stroke', 'red').style('fill', 'rgba(0, 0, 0, 0)')
-            neighbor = neighbor.successor
-        }
-
-        // context.beginPath()
-        // path({type: "Feature", 
-        //     geometry: {
-        //         type: "Polygon",
-        //         coordinates
-        //     }
-        // })
-        // context.strokeStyle = "black"
-        // context.stroke()
-        // context.fillStyle = "green"
-        // context.fill()
-
-        svg.append("path").datum({type: "Feature", 
-            geometry: {
-                type: "Polygon",
-                coordinates
-            }
-        }).attr("d", path).attr('stroke', 'black').style('fill', p.rgb)
-
-        svg.append("path").datum({type:"Feature",
-            geometry: {
-                type:"Point",
-                coordinates: [p.long, p.lat]
-            }}).attr("d", path)
-
-        let c1 = p.findCenter(originalPoints[neighbor.point.id], originalPoints[neighbor.successor.point.id])
-
-        svg.append("path").datum({type:"Feature",
-        geometry: {
-            type:"Point",
-            coordinates: [c1.long, c1.lat]
-        }}).attr("d", path)
-
-        let phi1 = Math.PI * p.lat / 180
-        let phi2 = Math.PI * c1.lat / 180
-        let lambda = Math.PI * Math.abs(c1.long - p.long) / 180
-        let rad = 180 * Math.acos(Math.sin(phi1) * Math.sin(phi2) + Math.cos(phi1) * Math.cos(phi2) * Math.cos(lambda)) / Math.PI
-        svg.append("path").datum(circle.radius(rad).center([c1.long, c1.lat])).attr("d", path).attr('stroke', 'black').attr("fill", 'rgba(0, 0, 0,0)')
-    }
-
 }
 
-// renderProjection()
-
+// Credit to https://observablehq.com/@d3/versor-zooming?collection=@d3/d3-zoom for the following code segment
 
 svg.call(zoom(projection)
         .on("zoom.render", () => renderSphere())
         .on("end.render", () => renderSphere()))
-    // .call(() => renderSphere())
     .node();
-
-
 
 function zoom(projection, {
     // Capture the projection’s original scale, before any zooming.
@@ -286,5 +197,3 @@ function rerender() {
     renderSphere()
     renderProjection()
 }
-
-addEventListener('keypress', (event) => {console.log(event)});

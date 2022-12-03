@@ -1,3 +1,9 @@
+/*
+ * Functions for cross products.
+ *
+ * Dominick Banasik
+*/
+
 function crossZ(u, v) {
     return u.x * v.y - v.x * u.y
 }

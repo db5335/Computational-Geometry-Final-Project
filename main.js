@@ -1,4 +1,8 @@
-const radius = /*200*/ 1
+/*
+ * Main script for Spherical Voronoi Diagram Pedagogical Aid webpage.
+ *
+ * Dominick Banasik
+*/
 
 const phases = {
     'originalPoints': 0,
@@ -94,7 +98,6 @@ function previous() {
 }
 
 function next() {
-    console.log('here')
     if (step < lastSteps[lastSteps.length - 1]) {
         step += 1
         rerender()
@@ -178,7 +181,7 @@ function generate(m) {
             dist = Math.sqrt(x * x + y * y + z * z)
         }
 
-        let point = new Point3d(i, radius * x / dist, radius * y / dist, radius * z / dist, color)
+        let point = new Point3d(i, x / dist, y / dist, z / dist, color)
         
         originalPoints.push(point)
         originalPointFeatures.push({
@@ -198,7 +201,6 @@ function sphericalVoronoi() {
     let {theta, phi} = anglesToNorthPole(originalPoints[0])
 
     let temp = originalPoints[1].rotate(theta, phi)
-    console.log(temp)
 
     let a = {
         x: originalPoints[0].x - 0,
@@ -501,7 +503,6 @@ function sphericalVoronoi() {
         circumcircleFeatures.push({})
 
         voronoiPoints.push(voronoiPoints[0])
-        console.log(voronoiPoints.length)
         voronoiCellFeatures.push({
             type: 'Feature',
             geometry: {
@@ -521,7 +522,7 @@ function sphericalVoronoi() {
     }
     let hullPhase = {
         from: delaunayPhase.to + 1,
-        to: delaunayPhase.to + del.length + 1
+        to: delaunayPhase.to + del.length + 2
     }
     let voronoiPhase = {
         from: hullPhase.to + 1,

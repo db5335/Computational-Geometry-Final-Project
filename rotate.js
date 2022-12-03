@@ -1,3 +1,9 @@
+/*
+ * Function for rotating a point to the north pole.
+ *
+ * Dominick Banasik
+*/
+
 function anglesToNorthPole(point) {
     let theta = Math.PI / 2
     let x = point.x

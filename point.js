@@ -1,3 +1,9 @@
+/*
+ * Definitions of point classes in 2D and 3D.
+ * 
+ * Dominick Banasik
+*/
+
 class PointNode {
     constructor(point) {
         this.id = point.id
@@ -61,8 +67,8 @@ class Point3d {
         this.original = null
         this.vertices = []
         
-        let projX = this.x / radius / (1 - this.z / radius)
-        let projY = this.y / radius / (1 - this.z / radius)
+        let projX = this.x / (1 - this.z)
+        let projY = this.y / (1 - this.z)
         this.point2d = new Point2d(this.id, projX, projY, this.color, this)
     }
 
@@ -100,9 +106,9 @@ class Point3d {
         let z3 = point2.z
 
         let a = x1 * (y3 * z2 - y2 * z3) + x2 * (y1 * z3 - y3 * z1) + x3 * (y2 * z1 - y1 * z2)
-        let dx = radius * radius * (y3 * z2 - y2 * z3 + y1 * z3 - y3 * z1 + y2 * z1 - y1 * z2)
-        let dy = radius * radius * (x2 * z3 - x3 * z2 + x3 * z1 - x1 * z3 + x1 * z2 - x2 * z1)
-        let dz = radius * radius * (x3 * y2 - x2 * y3 + x1 * y3 - x3 * y1 + x2 * y1 - x1 * y2)
+        let dx = (y3 * z2 - y2 * z3 + y1 * z3 - y3 * z1 + y2 * z1 - y1 * z2)
+        let dy = (x2 * z3 - x3 * z2 + x3 * z1 - x1 * z3 + x1 * z2 - x2 * z1)
+        let dz = (x3 * y2 - x2 * y3 + x1 * y3 - x3 * y1 + x2 * y1 - x1 * y2)
 
         let x = dx / 2 / a
         let y = dy / 2 / a
@@ -110,19 +116,33 @@ class Point3d {
 
         let dist = Math.sqrt(x * x + y * y + z * z)
         let v =  {
-            x: x * radius / dist,
-            y: y * radius / dist,
-            z: z * radius / dist
+            x: x / dist,
+            y: y / dist,
+            z: z / dist
         }
 
-        // return v
-
-        let r = {x:x2-x1,y:y2-y1,z:z2-z1}
-        let s = {x:x3-x2,y:y3-y2,z:z3-z2}
-        let u = {x:r.y*s.z-s.y*r.z, y:s.x*r.z-r.x*s.z, z:r.x*s.y-s.x*r.y}
+        let r = {
+            x: x2 - x1,
+            y: y2 - y1,
+            z: z2 - z1
+        }
+        let s = {
+            x: x3 - x2,
+            y: y3 - y2,
+            z: z3 - z2
+        }
+        let u = {
+            x: r.y * s.z - s.y * r.z,
+            y: s.x * r.z - r.x * s.z,
+            z: r.x * s.y - s.x * r.y
+        }
 
         if (u.x * v.x + u.y * v.y + u.z * v.z > 0) {
-            v = {x:-v.x, y:-v.y, z:-v.z}
+            v = {
+                x: -v.x,
+                y: -v.y,
+                z: -v.z
+            }
         }
 
         return new Point3d(-1, v.x, v.y, v.z, null)
